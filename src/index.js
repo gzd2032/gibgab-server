@@ -15,7 +15,7 @@ const server = app.listen(PORT, () =>
 
 const socket = new Server(server, {
   cors: {
-    origin: "http://localhost:3000",
+    origin: "https://gibgab.onrender.com",
   },
 });
 
