@@ -1,4 +1,4 @@
-{
+module.exports = {
   "categories": [
     "things a dog would say if they could talk",
     "christmas movies",
@@ -73,3 +73,4 @@
     
   ]
 }
+

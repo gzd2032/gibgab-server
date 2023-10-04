@@ -1,6 +1,7 @@
 const express = require("express");
 const createGame = require("./game.js");
 const { Server } = require("socket.io");
+const categories = require('./categories.js')
 const SPEED = 250;
 const PORT = process.env.PORT || 8000;
 const app = express();
@@ -15,11 +16,11 @@ const server = app.listen(PORT, () =>
 
 const socket = new Server(server, {
   cors: {
-    origin: "https://gibgab.onrender.com",
+    origin: process.env.NODE_ENV ? "production" : "https://gibgab.onrender.com", "*",
   },
 });
 
-const game = createGame(socket, SPEED);
+const game = createGame(socket, SPEED, categories);
 
 const createUser = (name, id) => {
   return {

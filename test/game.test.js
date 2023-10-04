@@ -1,4 +1,5 @@
 const createGame = require("../src/game.js");
+const db = require("../src/categories.js")
 
 describe("game countdown functions", () => {
   let game;
@@ -23,13 +24,13 @@ describe("game countdown functions", () => {
     // Fast-forward until all timers have been executed
 
     game = createGame(socket, 100);
-    game.joinPlayer(user1);
-    game.joinPlayer(user2);
+    game.addPlayer(user1);
+    game.addPlayer(user2);
     game.startGame("john");
     jest.runAllTimers();
 
-    expect(socket.emit).toHaveBeenNthCalledWith(1, "game start", "Go!");
-    expect(socket.emit).toHaveBeenNthCalledWith(2, "game turn", "bill");
+    expect(socket.emit).toHaveBeenNthCalledWith(1, "game reset");
+    expect(socket.emit).toHaveBeenNthCalledWith(2, "game start", "Go!");
   });
 
   it("should set the boardsize", () => {
@@ -60,23 +61,24 @@ describe("game countdown functions", () => {
     game.changeDirection();
     expect(socket.emit).not.toHaveBeenCalled();
 
-    game.joinPlayer(user1);
-    game.joinPlayer(user2);
+    game.addPlayer(user1);
+    game.addPlayer(user2);
     game.startGame("john");
     game.changeDirection();
     jest.runAllTimers();
 
-    expect(socket.emit).toHaveBeenNthCalledWith(1, "game start", "Go!");
-    expect(socket.emit).toHaveBeenNthCalledWith(2, "game turn", "bill");
-    expect(socket.emit).toHaveBeenNthCalledWith(3, "game turn", "john");
-    expect(socket.emit).toHaveBeenNthCalledWith(4, "game", 0);
+    expect(socket.emit).toHaveBeenNthCalledWith(1, "game reset");
+    expect(socket.emit).toHaveBeenNthCalledWith(2, "game start", "Go!");
+    expect(socket.emit).toHaveBeenNthCalledWith(3, "game turn", "bill");
+    expect(socket.emit).toHaveBeenNthCalledWith(4, "game turn", "john");
+    expect(socket.emit).toHaveBeenNthCalledWith(5, "game reset");
     expect(socket.emit).toHaveBeenLastCalledWith("game end", "bill wins!");
   });
 
   it("should return the list of players", () => {
     game = createGame(null);
-    game.joinPlayer(user1);
-    game.joinPlayer(user2);
+    game.addPlayer(user1);
+    game.addPlayer(user2);
     const players = game.getPlayers();
     expect(players.length).toBe(2);
     expect(players[0]).toEqual(user1);
@@ -85,19 +87,19 @@ describe("game countdown functions", () => {
 
   it("should reset the list of players", () => {
     game = createGame(null);
-    game.joinPlayer(user1);
-    game.joinPlayer(user2);
+    game.addPlayer(user1);
+    game.addPlayer(user2);
     let players = game.getPlayers();
     expect(players.length).toBe(2);
-    game.resetPlayers();
+    game.resetUsers();
     players = game.getPlayers();
     expect(players.length).toBe(0);
   });
 
   it("should remove players from the list of players", () => {
     game = createGame(null);
-    game.joinPlayer(user1);
-    game.joinPlayer(user2);
+    game.addPlayer(user1);
+    game.addPlayer(user2);
     let players = game.getPlayers();
     expect(players.length).toBe(2);
     game.removePlayer(user1.id)
@@ -107,6 +109,14 @@ describe("game countdown functions", () => {
     players = game.getPlayers();
     expect(players.length).toBe(0);
   });
+
+  it("should return a random category", () => {
+    let socket = jest.fn();
+    game = createGame(socket, 400, db);
+    const randomCat = game.getCategory();
+    console.log(randomCat);
+    expect(db.categories.indexOf(randomCat)).toBeGreaterThan(-1);
+  })
 
 });
 

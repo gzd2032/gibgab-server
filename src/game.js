@@ -1,4 +1,16 @@
-function createGame(socket, SPEED) {
+const GAME = {
+  END:"game end",
+  TICK:"game tick",
+  RESET:"game reset",
+  START:"game start",
+  TURN:"game turn",
+  READY:"game ready",
+  PENDING:"game pending",
+  PLAYERS:"players",
+  SPECTATORS:"spectators",
+}
+
+function createGame(socket, SPEED, db) {
   let boardSize = 0;
   let counter = 0;
   let playing = false;
@@ -19,9 +31,9 @@ function createGame(socket, SPEED) {
     }
     if (Math.abs(counter) > boardSize) {
       resetCounter();
-      socket.emit("game end", `${players[1 - turn].name} wins!`);
+      return socket.emit(GAME.END, `${players[1 - turn].name} wins!`);
     }
-    socket.emit("game tick", counter);
+    socket.emit(GAME.TICK, counter);
   }
   function removePlayer(idx) {
     players = players.filter((player) => player.id !== idx);
@@ -45,7 +57,7 @@ function createGame(socket, SPEED) {
     counter = 0;
     playing = false;
     gameTimer = null;
-    socket.emit("game reset");
+    socket.emit(GAME.RESET);
   }
   function addPlayer(player) {
     return players.push(player);
@@ -60,8 +72,8 @@ function createGame(socket, SPEED) {
     resetCounter();
     turn = 1 - players.map((player) => player.name).indexOf(user);
     direction = turn ? true : false;
-    socket.emit("game start", "Go!");
-    socket.emit("game turn", `${players[turn]?.name}`);
+    socket.emit(GAME.START, "Go!");
+    socket.emit(GAME.TURN, `${players[turn]?.name}`);
     playing = true;
     gameTimer = setInterval(countdown, SPEED);
   }
@@ -69,20 +81,28 @@ function createGame(socket, SPEED) {
     return players;
   }
   function sendReady() {
-    socket.emit("game ready", "ready");
+    socket.emit(GAME.READY, "ready");
   }
   function sendPending() {
-    socket.emit("game pending", "pending");
+    socket.emit(GAME.PENDING, "pending");
   }
   function changeDirection() {
     if (!playing) return;
     direction = !direction;
     turn = 1 - turn;
-    socket.emit("game turn", `${players[turn].name}`);
+    socket.emit(GAME.TURN, `${players[turn].name}`);
   }
   function sendUsers() {
-    socket.emit("players", players);
-    socket.emit("spectators", spectators);
+    socket.emit(GAME.PLAYERS, players);
+    socket.emit(GAME.SPECTATORS, spectators);
+  }
+  function resetUsers(){
+    players = [];
+    spectators = []
+  }
+  function getCategory () {
+    const number = Math.floor(Math.random() * (categories.length - 1) )
+    return db.categories[number]
   }
   function swapPlayer(newPlayer, currentPlayer) {
     const spectatorToPlayer = findUser(newPlayer);
@@ -93,8 +113,7 @@ function createGame(socket, SPEED) {
     addSpectator(playerToSpectator);
     addPlayer(spectatorToPlayer);
 
-    socket.emit("players", players);
-    socket.emit("spectators", spectators);
+    sendUsers();
     resetCounter();
   }
 
@@ -109,10 +128,12 @@ function createGame(socket, SPEED) {
     sendReady,
     sendPending,
     resetCounter,
+    resetUsers,
     getPlayers,
     getSpectators,
     addSpectator,
     removePlayer,
+    getCategory,
     removeSpectator,
     sendUsers,
     swapPlayer,
