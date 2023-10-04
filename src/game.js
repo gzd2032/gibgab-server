@@ -101,8 +101,8 @@ function createGame(socket, SPEED, db) {
     spectators = []
   }
   function getCategory () {
-    const number = Math.floor(Math.random() * (categories.length - 1) )
-    return db.categories[number]
+    const number = Math.floor(Math.random() * (db.categories.length - 1) )
+    socket.emit("category", db.categories[number]); 
   }
   function swapPlayer(newPlayer, currentPlayer) {
     const spectatorToPlayer = findUser(newPlayer);

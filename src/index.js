@@ -16,7 +16,7 @@ const server = app.listen(PORT, () =>
 
 const socket = new Server(server, {
   cors: {
-    origin: process.env.NODE_ENV ? "production" : "https://gibgab.onrender.com", "*",
+    origin: process.env.NODE_ENV === "production" ? "https://gibgab.onrender.com" : "*",
   },
 });
 
@@ -76,6 +76,10 @@ socket.on("connection", (io) => {
 
   io.on("turn", () => {
     game.changeDirection();
+  });
+  
+  io.on("game category", () => {
+    game.getCategory();
   });
 
   io.on("swap", (newPlayerName, currentPlayerName) => {
