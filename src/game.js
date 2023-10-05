@@ -3,6 +3,7 @@ const GAME = {
   TICK:"game tick",
   RESET:"game reset",
   START:"game start",
+  SPEED:"game speed",
   SUBMESSAGE:"game submessage",
   READY:"game ready",
   PENDING:"game pending",
@@ -19,6 +20,7 @@ function createGame(socket, SPEED, db) {
   let turn = 0;
   let players = [];
   let spectators = [];
+  let gameSpeed = SPEED;
   function setBoardSize(size) {
     if (typeof size === "number") boardSize = size;
     return boardSize === size;
@@ -92,7 +94,7 @@ function createGame(socket, SPEED, db) {
     turn = 1 - turn;
     socket.emit(GAME.SUBMESSAGE, `${players[turn].name}`);
   }
-  function sendUsers() {
+  function sendListOfUsers() {
     socket.emit(GAME.PLAYERS, players);
     socket.emit(GAME.SPECTATORS, spectators);
   }
@@ -104,16 +106,18 @@ function createGame(socket, SPEED, db) {
     const number = Math.floor(Math.random() * (db.categories.length - 1) )
     socket.emit("category", db.categories[number]); 
   }
+  function changeGameSpeed (newspeed) {
+    gameSpeed = newspeed
+    socket.emit(GAME.SPEED, gameSpeed)
+  }
   function swapPlayer(newPlayer, currentPlayer) {
     const spectatorToPlayer = findUser(newPlayer);
     const playerToSpectator = findUser(currentPlayer);
-    console.log(spectatorToPlayer, playerToSpectator)
     removePlayer(playerToSpectator.id);
     removeSpectator(spectatorToPlayer.id);
     addSpectator(playerToSpectator);
     addPlayer(spectatorToPlayer);
-
-    sendUsers();
+    sendListOfUsers();
     resetCounter();
   }
 
@@ -135,7 +139,7 @@ function createGame(socket, SPEED, db) {
     removePlayer,
     getCategory,
     removeSpectator,
-    sendUsers,
+    sendListOfUsers,
     swapPlayer,
   };
 }

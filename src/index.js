@@ -36,7 +36,7 @@ socket.on("connection", (io) => {
     const players = game.removePlayer(io.id);
     const spectators = game.removeSpectator(io.id);
     if (socket.engine.clientsCount > 0) {
-      game.sendUsers();
+      game.sendListOfUsers();
     }
   });
   io.on("join user", (username) => {
@@ -58,7 +58,7 @@ socket.on("connection", (io) => {
       game.sendReady();
     }
     
-    game.sendUsers();
+    game.sendListOfUsers();
 
   });
 
