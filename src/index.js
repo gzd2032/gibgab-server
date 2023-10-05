@@ -2,7 +2,6 @@ const express = require("express");
 const createGame = require("./game.js");
 const { Server } = require("socket.io");
 const db = require('./categories.js')
-const SPEED = 250;
 const PORT = process.env.PORT || 8000;
 const app = express();
 
@@ -20,7 +19,7 @@ const socket = new Server(server, {
   },
 });
 
-const game = createGame(socket, SPEED, db);
+const game = createGame(socket, db);
 
 const createUser = (name, id) => {
   return {
@@ -80,6 +79,10 @@ socket.on("connection", (io) => {
   
   io.on("game category", () => {
     game.getCategory();
+  });
+
+  io.on("game speed", (speed) => {
+    game.changeGameSpeed(speed);
   });
 
   io.on("swap", (newPlayerName, currentPlayerName) => {

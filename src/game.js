@@ -11,7 +11,13 @@ const GAME = {
   SPECTATORS:"spectators",
 }
 
-function createGame(socket, SPEED, db) {
+const SPEED = {
+  "high": 300,
+  "med": 600,
+  "low": 1000
+}
+
+function createGame(socket, db) {
   let boardSize = 0;
   let counter = 0;
   let playing = false;
@@ -20,7 +26,7 @@ function createGame(socket, SPEED, db) {
   let turn = 0;
   let players = [];
   let spectators = [];
-  let gameSpeed = SPEED;
+  let gameSpeed = SPEED["med"];
   function setBoardSize(size) {
     if (typeof size === "number") boardSize = size;
     return boardSize === size;
@@ -33,7 +39,9 @@ function createGame(socket, SPEED, db) {
     }
     if (Math.abs(counter) > boardSize) {
       resetCounter();
-      return socket.emit(GAME.END, `${players[1 - turn].name} wins!`);
+      socket.emit(GAME.END, `${players[1 - turn].name} wins!`);
+      socket.emit(GAME.SUBMESSAGE, `reset or swap out player`)
+      return
     }
     socket.emit(GAME.TICK, counter);
   }
@@ -77,7 +85,7 @@ function createGame(socket, SPEED, db) {
     socket.emit(GAME.START, "Go!");
     socket.emit(GAME.SUBMESSAGE, `${players[turn]?.name}`);
     playing = true;
-    gameTimer = setInterval(countdown, SPEED);
+    gameTimer = setInterval(countdown, gameSpeed);
   }
   function getPlayers() {
     return players;
@@ -107,8 +115,8 @@ function createGame(socket, SPEED, db) {
     socket.emit("category", db.categories[number]); 
   }
   function changeGameSpeed (newspeed) {
-    gameSpeed = newspeed
-    socket.emit(GAME.SPEED, gameSpeed)
+    gameSpeed = SPEED[newspeed]
+    socket.emit(GAME.SPEED, newspeed)
   }
   function swapPlayer(newPlayer, currentPlayer) {
     const spectatorToPlayer = findUser(newPlayer);
@@ -135,6 +143,7 @@ function createGame(socket, SPEED, db) {
     resetUsers,
     getPlayers,
     getSpectators,
+    changeGameSpeed,
     addSpectator,
     removePlayer,
     getCategory,
