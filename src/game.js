@@ -3,7 +3,7 @@ const GAME = {
   TICK:"game tick",
   RESET:"game reset",
   START:"game start",
-  TURN:"game turn",
+  SUBMESSAGE:"game submessage",
   READY:"game ready",
   PENDING:"game pending",
   PLAYERS:"players",
@@ -73,7 +73,7 @@ function createGame(socket, SPEED, db) {
     turn = 1 - players.map((player) => player.name).indexOf(user);
     direction = turn ? true : false;
     socket.emit(GAME.START, "Go!");
-    socket.emit(GAME.TURN, `${players[turn]?.name}`);
+    socket.emit(GAME.SUBMESSAGE, `${players[turn]?.name}`);
     playing = true;
     gameTimer = setInterval(countdown, SPEED);
   }
@@ -90,7 +90,7 @@ function createGame(socket, SPEED, db) {
     if (!playing) return;
     direction = !direction;
     turn = 1 - turn;
-    socket.emit(GAME.TURN, `${players[turn].name}`);
+    socket.emit(GAME.SUBMESSAGE, `${players[turn].name}`);
   }
   function sendUsers() {
     socket.emit(GAME.PLAYERS, players);

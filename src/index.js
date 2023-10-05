@@ -1,7 +1,7 @@
 const express = require("express");
 const createGame = require("./game.js");
 const { Server } = require("socket.io");
-const categories = require('./categories.js')
+const db = require('./categories.js')
 const SPEED = 250;
 const PORT = process.env.PORT || 8000;
 const app = express();
@@ -20,7 +20,7 @@ const socket = new Server(server, {
   },
 });
 
-const game = createGame(socket, SPEED, categories);
+const game = createGame(socket, SPEED, db);
 
 const createUser = (name, id) => {
   return {

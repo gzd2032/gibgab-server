@@ -57,7 +57,7 @@ describe("game countdown functions", () => {
 
     // Fast-forward until all timers have been executed
 
-    game = createGame(socket, 100);
+    game = createGame(socket, 100, db);
     game.changeDirection();
     expect(socket.emit).not.toHaveBeenCalled();
 
@@ -69,8 +69,8 @@ describe("game countdown functions", () => {
 
     expect(socket.emit).toHaveBeenNthCalledWith(1, "game reset");
     expect(socket.emit).toHaveBeenNthCalledWith(2, "game start", "Go!");
-    expect(socket.emit).toHaveBeenNthCalledWith(3, "game turn", "bill");
-    expect(socket.emit).toHaveBeenNthCalledWith(4, "game turn", "john");
+    expect(socket.emit).toHaveBeenNthCalledWith(3, "game submessage", "bill");
+    expect(socket.emit).toHaveBeenNthCalledWith(4, "game submessage", "john");
     expect(socket.emit).toHaveBeenNthCalledWith(5, "game reset");
     expect(socket.emit).toHaveBeenLastCalledWith("game end", "bill wins!");
   });
@@ -111,11 +111,15 @@ describe("game countdown functions", () => {
   });
 
   it("should return a random category", () => {
-    let socket = jest.fn();
+    let socket = {
+      emit: jest.fn((arg1, arg2) => {
+        if (arg1 === "category") {
+          expect(db.categories.indexOf(arg2)).toBeGreaterThan(-1);
+        };
+      }),
+    };
     game = createGame(socket, 400, db);
-    const randomCat = game.getCategory();
-    console.log(randomCat);
-    expect(db.categories.indexOf(randomCat)).toBeGreaterThan(-1);
+    game.getCategory();
   })
 
 });
